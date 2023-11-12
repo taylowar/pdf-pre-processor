@@ -1,4 +1,4 @@
-# Pdf preParser - PpP
+# Pdf preProcessor - PpP
 
 An ``stb-style header only library`` for extracting data out of pdf files
 
