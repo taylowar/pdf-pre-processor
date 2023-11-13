@@ -15,7 +15,7 @@ void example_parser(size_t *argc,  char *argv[], PpP_Elda *elda, String_View lin
         if (*argc == 1) {
             snprintf(buf, 512, "%s: "SV_Fmt"", argv[argc_cpy - (*argc)], SV_Arg(word));
         } else {
-            snprintf(buf, 512, "%s: "SV_Fmt", ", argv[argc_cpy - (*argc)], SV_Arg(word));
+            snprintf(buf, 512, "%s: "SV_Fmt""PPP_SEPARATOR, argv[argc_cpy - (*argc)], SV_Arg(word));
         }
         out_string = ppp_string_append(out_string, buf);
         (*argc) = (*argc) - 1;
@@ -39,7 +39,14 @@ int main()
     size_t ppp_argc = ARRAY_LEN(ppp_argv);
 
     ppp_text_to_json(4, ppp_argc, ppp_argv, "\n", &elda, text, example_parser);
+    
+    for (size_t i = 0; i < elda.size; ++i) {
+        ppp_elem_transform_json(&elda.es[i]);
+    }
+
     ppp_elda_print_json(elda);
+
+    return 0;
 
     ppp_elda_clear(&elda);
     ppp_elda_init(elda_cap, &elda);

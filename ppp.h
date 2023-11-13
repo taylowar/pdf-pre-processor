@@ -11,6 +11,20 @@
 #include <assert.h>
 #include <unistd.h>
 
+#ifndef PPP_SEPARATOR
+#define PPP_SEPARATOR "~/"
+#endif
+
+#ifndef PPP_PREFIX
+#define PPP_PREFIX "~^"
+#endif
+
+#ifndef PPP_POSTFIX
+#define PPP_POSTFIX "~$"
+#endif
+
+#define PPP_JSON_FORMAT ""PPP_PREFIX"%s"PPP_POSTFIX":"PPP_PREFIX""SV_Fmt""PPP_POSTFIX
+
 #ifndef SV_IMPLEMENTATION
 #define SV_IMPLEMENTATION
 #include "./sv.h"
@@ -43,6 +57,10 @@ void  ppp_string_rev(char * s1);
 char* ppp_string_join(size_t wc,  char *text[]);
 
 char* ppp_pdf_to_text(char *path);
+
+// transformations
+void ppp_elem_transform_json(PpP_Elem *e);
+
 
 typedef void parser_func(size_t *printc,  char *argv[], PpP_Elda *elda, String_View line);
 void ppp_text_to_json(
@@ -115,6 +133,24 @@ char* ppp_string_append(char *s1, char *s2)
     s[size - 1] = '\0';
     return s;
 }
+/**
+ * Appends the json key:value to the entry_value string
+ * {entry_value} ... string pointer to where the json entry will be appended
+ * {col_ind}     ... index of the column 
+ * {ppp_argc}    ... total count of columns
+ * {ppp_argv}    ... array of strings containing colum nameis
+ */
+void ppp_string_append_json_sv(char **entry_value, size_t col_ind, size_t ppp_argc, char *ppp_argv[], String_View sv)
+{
+    char buf[512];
+    if ((ppp_argc - 1) == col_ind) {
+        snprintf(buf, sizeof(buf), PPP_JSON_FORMAT"", ppp_argv[col_ind], SV_Arg(sv));
+    } else {
+        snprintf(buf, sizeof(buf), PPP_JSON_FORMAT""PPP_SEPARATOR, ppp_argv[col_ind], SV_Arg(sv));
+    }
+    (*entry_value) = ppp_string_append(*entry_value, buf);
+}
+
 
 void ppp_string_rev(char *text)
 {
@@ -182,6 +218,36 @@ char* ppp_pdf_to_text(char *path)
     printf("------------------------------------\n");
     printf("[PpP]: pdf converted to txt\n");
     return buffer;
+}
+
+void ppp_elem_transform_json(PpP_Elem *em)
+{
+    assert(strlen(PPP_SEPARATOR) == 2);
+    assert(strlen(PPP_PREFIX) == 2);
+    assert(strlen(PPP_POSTFIX) == 2);
+    
+    size_t ss = strlen(em->value);
+    for (size_t i = 0; i < ss; ++i) {
+        char c = em->value[i];
+        if (c == PPP_SEPARATOR[0]) {
+            if (em->value[i+1] == PPP_SEPARATOR[1]) {
+                em->value[i] = ',';
+                em->value[i+1] = ' ';
+            }
+        } 
+        if (c == PPP_PREFIX[0]) {
+            if (em->value[i+1] == PPP_PREFIX[1]) {
+                em->value[i] = '\02';
+                em->value[i+1] = '"';
+            }
+        }
+        if (c == PPP_POSTFIX[0]) {
+            if (em->value[i+1] == PPP_POSTFIX[1]) {
+                em->value[i] = '\02"';
+                em->value[i+1] = '\03';
+            }
+        }
+    }
 }
 
 void ppp_text_to_json(

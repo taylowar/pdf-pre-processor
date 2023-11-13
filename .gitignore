@@ -4,3 +4,7 @@ main
 samples/sample_kingsbox.pdf
 example_json_one
 example_json_omit_cols
+example_kingsbox.c
+example_kingsbox
+test
+test.c
