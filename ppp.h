@@ -53,23 +53,24 @@ void  ppp_elda_print_json(PpP_Elda elda);
 
 // Function for string manipulation
 char* ppp_string_append(char *s1, char *s2); 
+void ppp_string_append_json_sv(char **entry_value, size_t col_ind, size_t ppp_argc, char *ppp_argv[], String_View sv);
 void  ppp_string_rev(char * s1);
 char* ppp_string_join(size_t wc,  char *text[]);
 
-char* ppp_pdf_to_text(char *path);
+void ppp_pdf_to_text(char *path, char **text);
 
 // transformations
 void ppp_elem_transform_json(PpP_Elem *e);
 
 
-typedef void parser_func(size_t *printc,  char *argv[], PpP_Elda *elda, String_View line);
+typedef void parser_func(size_t *printc, char *argv[], PpP_Elda *elda, String_View line);
 void ppp_text_to_json(
         size_t printc,
         size_t argc,
         char *argv[],
-        const char *table_vals_end,
+        char *table_vals_end,
         PpP_Elda *elda,
-        const char *text,
+        char *text,
         parser_func
 );
 
@@ -106,11 +107,13 @@ void ppp_elda_print_json(PpP_Elda elda)
     printf("------------------------------------\n");
     printf("json: {\n");
     for (size_t i = 0; i < elda.size; ++i) {
+        PpP_Elem elem = elda.es[i];
+        ppp_elem_transform_json(&elem);
         if ((i+1) == elda.size) {
-            printf("%4s\"%zu\": { %s }\n","", i, elda.es[i].value);
+            printf("%4s\"%zu\": { %s }\n","", i, elem.value);
         }
         else {
-            printf("%4s\"%zu\": { %s },\n", "", i, elda.es[i].value);
+            printf("%4s\"%zu\": { %s },\n", "", i, elem.value);
         }
     }
     printf("}\n");
@@ -180,7 +183,7 @@ char* ppp_string_join(size_t wc,  char *text[])
     return dst;
 }
 
-char* ppp_pdf_to_text(char *path)
+void ppp_pdf_to_text(char *path, char **text)
 {
     char *cmd = malloc (20 + strlen(path)); 
     sprintf(cmd, "pdftotext %s -raw -", path); 
@@ -217,7 +220,7 @@ char* ppp_pdf_to_text(char *path)
 
     printf("------------------------------------\n");
     printf("[PpP]: pdf converted to txt\n");
-    return buffer;
+    (*text) = ppp_string_append(*text, (char *)buffer);
 }
 
 void ppp_elem_transform_json(PpP_Elem *em)
@@ -243,7 +246,7 @@ void ppp_elem_transform_json(PpP_Elem *em)
         }
         if (c == PPP_POSTFIX[0]) {
             if (em->value[i+1] == PPP_POSTFIX[1]) {
-                em->value[i] = '\02"';
+                em->value[i] = '"';
                 em->value[i+1] = '\03';
             }
         }
@@ -254,13 +257,13 @@ void ppp_text_to_json(
         size_t printc,
         size_t argc,
         char *argv[],
-        const char *table_vals_end,
+        char *table_vals_end,
         PpP_Elda *elda,
-        const char *text,
-        void parser_func(size_t *printc,  char *argv[], PpP_Elda *elda, String_View line) 
+        char *text,
+        void parser_func(size_t *printc, char *argv[], PpP_Elda *elda, String_View line) 
 )
 {
-    const char *table_args = ppp_string_join(argc, argv);
+    char *table_args = ppp_string_join(argc, argv);
 
     String_View text_sv = sv_from_cstr(text); 
     String_View table_args_sv = sv_from_cstr(table_args); 
