@@ -45,23 +45,27 @@ typedef struct {
 } PpP_Elda;
 
 // elda functions
-void  ppp_elda_init(size_t capacity, PpP_Elda *da);
+void  ppp_elda_init(size_t capacity, PpP_Elda *elda);
 void  ppp_elda_clear(PpP_Elda *elda);
-void  ppp_elda_insert(PpP_Elem v, PpP_Elda *da);
-void  ppp_elda_print(PpP_Elda elda);
+void  ppp_elda_insert(PpP_Elem elem, PpP_Elda *elda);
+void  ppp_elda_print_raw(PpP_Elda elda);
 void  ppp_elda_print_json(PpP_Elda elda);
 
-// Function for string manipulation
-char* ppp_string_append(char *s1, char *s2); 
-void ppp_string_append_json_sv(char **entry_value, size_t col_ind, size_t ppp_argc, char *ppp_argv[], String_View sv);
+// Functions for string manipulation
+char* ppp_string_append(char *dst, char *str); 
+void  ppp_string_append_json_sv(char **entry_value, size_t col_ind, size_t ppp_argc, char *ppp_argv[], String_View sv);
 void  ppp_string_rev(char * s1);
 char* ppp_string_join(size_t wc,  char *text[]);
 
+/**
+ * Transpile pdf into raw text
+ * {path} ... string path to pdf file [relative to the script]
+ * {text} ... pointer to the string which will store pdf as raw text
+*/
 void ppp_pdf_to_text(char *path, char **text);
 
 // transformations
-void ppp_elem_transform_json(PpP_Elem *e);
-
+void ppp_elem_transform_json(PpP_Elem *elem);
 
 typedef void parser_func(size_t *printc, char *argv[], PpP_Elda *elda, String_View line);
 void ppp_text_to_json(
@@ -78,9 +82,9 @@ void ppp_text_to_json(
 
 #ifdef PPP_IMPLEMENTATION
 
-void ppp_elda_init(size_t capacity, PpP_Elda *da) {
-    da->capacity = capacity;
-    da->es = malloc(sizeof(PpP_Elem) * capacity);
+void ppp_elda_init(size_t capacity, PpP_Elda *elda) {
+    elda->capacity = capacity;
+    elda->es = malloc(sizeof(PpP_Elem) * capacity);
 }
 
 void ppp_elda_clear(PpP_Elda *elda)
@@ -89,12 +93,13 @@ void ppp_elda_clear(PpP_Elda *elda)
     elda->size = 0;
 }
 
-void ppp_elda_insert(PpP_Elem v, PpP_Elda *da) {
-    da->es[da->size] = v;
-    da->size += 1;
+void ppp_elda_insert(PpP_Elem elem, PpP_Elda *elda) {
+    assert(elda->size < elda->capacity);
+    elda->es[elda->size] = elem;
+    elda->size += 1;
 }
 
-void ppp_elda_print(PpP_Elda elda)
+void ppp_elda_print_raw(PpP_Elda elda)
 {
     printf("------------------------------------\n");
     for (size_t i = 0; i < elda.size; ++i) {
@@ -119,22 +124,22 @@ void ppp_elda_print_json(PpP_Elda elda)
     printf("}\n");
 }   
 
-char* ppp_string_append(char *s1, char *s2) 
+char* ppp_string_append(char *dst, char *str) 
 {
-    size_t s1_len = strlen(s1);
-    size_t s2_len = strlen(s2);
-    size_t size = s1_len + s2_len + 1;
-    char *s = calloc(size, sizeof(char));
+    size_t dst_len = strlen(dst);
+    size_t str_len = strlen(str);
+    size_t size = dst_len + str_len + 1;
+    char *fstr = calloc(size, sizeof(char));
 
-    for (size_t i = 0; i < s1_len; ++i) {
-        s[i] = s1[i];
+    for (size_t i = 0; i < dst_len; ++i) {
+        fstr[i] = dst[i];
     }
 
-    for (size_t i = 0; i < s2_len; ++i) {
-        s[i + s1_len] = s2[i];
+    for (size_t i = 0; i < str_len; ++i) {
+        fstr[i + dst_len] = str[i];
     }
-    s[size - 1] = '\0';
-    return s;
+    fstr[size - 1] = '\0';
+    return fstr;
 }
 /**
  * Appends the json key:value to the entry_value string
@@ -171,7 +176,7 @@ void ppp_string_rev(char *text)
 char* ppp_string_join(size_t wc,  char *text[]) 
 {
     char *dst = "";
-    char buf[64]; 
+    char buf[512]; 
     for (size_t i = 0; i < wc; ++i) {
         if ((i+1) == wc) {
             snprintf(buf, sizeof(buf), "%s", text[i]);
@@ -223,31 +228,31 @@ void ppp_pdf_to_text(char *path, char **text)
     (*text) = ppp_string_append(*text, (char *)buffer);
 }
 
-void ppp_elem_transform_json(PpP_Elem *em)
+void ppp_elem_transform_json(PpP_Elem *elem)
 {
     assert(strlen(PPP_SEPARATOR) == 2);
     assert(strlen(PPP_PREFIX) == 2);
     assert(strlen(PPP_POSTFIX) == 2);
     
-    size_t ss = strlen(em->value);
+    size_t ss = strlen(elem->value);
     for (size_t i = 0; i < ss; ++i) {
-        char c = em->value[i];
+        char c = elem->value[i];
         if (c == PPP_SEPARATOR[0]) {
-            if (em->value[i+1] == PPP_SEPARATOR[1]) {
-                em->value[i] = ',';
-                em->value[i+1] = ' ';
+            if (elem->value[i+1] == PPP_SEPARATOR[1]) {
+                elem->value[i] = ',';
+                elem->value[i+1] = ' ';
             }
         } 
         if (c == PPP_PREFIX[0]) {
-            if (em->value[i+1] == PPP_PREFIX[1]) {
-                em->value[i] = '\02';
-                em->value[i+1] = '"';
+            if (elem->value[i+1] == PPP_PREFIX[1]) {
+                elem->value[i] = '\02';
+                elem->value[i+1] = '"';
             }
         }
         if (c == PPP_POSTFIX[0]) {
-            if (em->value[i+1] == PPP_POSTFIX[1]) {
-                em->value[i] = '"';
-                em->value[i+1] = '\03';
+            if (elem->value[i+1] == PPP_POSTFIX[1]) {
+                elem->value[i] = '"';
+                elem->value[i+1] = '\03';
             }
         }
     }
