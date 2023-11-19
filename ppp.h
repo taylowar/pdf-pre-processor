@@ -152,8 +152,10 @@ char* ppp_string_append(char *dst, char *str)
  */
 void ppp_string_append_json_sv(char **entry_value, size_t col_ind, size_t printc, size_t ppp_argc, char *ppp_argv[], String_View sv)
 {
+    // making sure that you don't want to print more than you are allowed
     assert(printc <= ppp_argc);
     assert(col_ind < ppp_argc);
+
     char buf[512];
     if ((printc - 1) == col_ind) {
         snprintf(buf, sizeof(buf), PPP_JSON_FORMAT"", ppp_argv[col_ind], SV_Arg(sv));
