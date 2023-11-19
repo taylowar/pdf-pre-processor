@@ -6,7 +6,7 @@ An ``stb-style header only library`` for extracting data out of pdf files
 
 ## Quick Start
 
-* copy <a link="https://github.com/pwnker/pdf-pre-processor/blob/main/ppp.h">ppp</a> into your project and include it like this:
+* copy [ppp.h](./ppp.h) into your project and include it like this:
 ```{c}
 #define PPP_IMPLEMENTATION
 #include "./ppp.h"
