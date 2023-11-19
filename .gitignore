@@ -2,7 +2,7 @@ build.sh
 main.c
 main
 samples/sample_kingsbox.pdf
-json_one
+json_read_print
 json_omit_cols
 ex_kingsbox.c
 ex_kingsbox
