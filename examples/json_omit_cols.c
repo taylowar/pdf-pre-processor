@@ -4,13 +4,13 @@
 #define PPP_IMPLEMENTATION
 #include "../ppp.h"
 
-void example_parser(size_t *ppp_argc, char *ppp_argv[], PpP_Elda *elda, String_View line)
+void example_parser(size_t *printc, size_t ppp_argc, char *ppp_argv[], PpP_Elda *elda, String_View line)
 {
     char *out_string = "";
     size_t col_ind = 0;
-    while (col_ind < *ppp_argc) {
+    while (col_ind < ppp_argc) {
         String_View word = sv_chop_by_delim(&line, ' '); 
-        ppp_string_append_json_sv(&out_string, col_ind++, *ppp_argc, ppp_argv, word);
+        ppp_string_append_json_sv(&out_string, col_ind++, *printc, ppp_argc, ppp_argv, word);
     }
     PpP_Elem entry = {0};
     snprintf(entry.value, 256, "%s", out_string);
@@ -30,7 +30,7 @@ int main()
     char *ppp_argv[] = {"ID", "NAME", "SURNAME", "BIRTH DATE"};
     size_t ppp_argc = ARRAY_LEN(ppp_argv);
 
-    ppp_text_to_json(4, ppp_argc, ppp_argv, "\n", &elda, text, example_parser);
+    ppp_extract_table(4, ppp_argc, ppp_argv, "\n", &elda, text, example_parser);
     ppp_elda_print_json(elda);
 
     ppp_elda_clear(&elda);

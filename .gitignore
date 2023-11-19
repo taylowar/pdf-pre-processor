@@ -4,7 +4,7 @@ main
 samples/sample_kingsbox.pdf
 json_read_print
 json_omit_cols
-ex_kingsbox.c
+ex_*.c
 ex_kingsbox
 test
 test.c
