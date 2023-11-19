@@ -36,19 +36,19 @@ int main()
     ppp_elda_clear(&elda);
 
     ppp_elda_init(elda_cap, &elda);
-    ppp_text_to_json(3, ppp_argc, ppp_argv, "\n", &elda, text, example_parser);
+    ppp_extract_table(3, ppp_argc, ppp_argv, "\n", &elda, text, example_parser);
     ppp_elda_print_json(elda);
 
     ppp_elda_clear(&elda);
 
     ppp_elda_init(elda_cap, &elda);
-    ppp_text_to_json(2, ppp_argc, ppp_argv, "\n", &elda, text, example_parser);
+    ppp_extract_table(2, ppp_argc, ppp_argv, "\n", &elda, text, example_parser);
     ppp_elda_print_json(elda);
 
     ppp_elda_clear(&elda);
     
     ppp_elda_init(elda_cap, &elda);
-    ppp_text_to_json(1, ppp_argc, ppp_argv, "\n", &elda, text, example_parser);
+    ppp_extract_table(1, ppp_argc, ppp_argv, "\n", &elda, text, example_parser);
     ppp_elda_print_json(elda);
 
     return 0;

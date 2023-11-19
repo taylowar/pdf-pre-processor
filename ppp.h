@@ -70,7 +70,7 @@ void ppp_pdf_to_text(char *path, char **text);
 void ppp_elem_transform_json(PpP_Elem *elem);
 
 typedef void parser_func(size_t *printc, size_t ppp_argc, char *ppp_argv[], PpP_Elda *elda, String_View line);
-void ppp_text_to_json(
+void ppp_extract_table(
         size_t printc,
         size_t argc,
         char *argv[],
@@ -274,7 +274,7 @@ void ppp_elem_transform_json(PpP_Elem *elem)
     }
 }
 
-void ppp_text_to_json(
+void ppp_extract_table(
         size_t printc,
         size_t argc,
         char *argv[],
