@@ -19,35 +19,46 @@ void example_parser(size_t *printc, size_t ppp_argc, char *ppp_argv[], PpP_Elda 
 
 int main()
 {
+    // Element Dynamic Array ~ ELDA
+    // initalize elda with capacity of 32 elements
     size_t elda_cap = 32;
     PpP_Elda elda = {0};
     ppp_elda_init(elda_cap, &elda);
 
+    // Load pdf as text
     char *path = "./samples/sample_2.pdf";
     char *text = "";
     ppp_pdf_to_text(path, &text); 
 
+    // -------------------------------------------------------------------------
+    // read table data from pdf plaintext into elda
+    // -------------------------------------------------------------------------
+    
+    // read 4 coloumns
     char *ppp_argv[] = {"ID", "NAME", "SURNAME", "BIRTH DATE"};
     size_t ppp_argc = ARRAY_LEN(ppp_argv);
-
     ppp_extract_table(4, ppp_argc, ppp_argv, "\n", &elda, text, example_parser);
+
     ppp_elda_print_json(elda);
 
     ppp_elda_clear(&elda);
-
     ppp_elda_init(elda_cap, &elda);
+
+    // read 3 coloumns
     ppp_extract_table(3, ppp_argc, ppp_argv, "\n", &elda, text, example_parser);
     ppp_elda_print_json(elda);
 
     ppp_elda_clear(&elda);
-
     ppp_elda_init(elda_cap, &elda);
+    
+    // read 2 coloumns
     ppp_extract_table(2, ppp_argc, ppp_argv, "\n", &elda, text, example_parser);
     ppp_elda_print_json(elda);
 
     ppp_elda_clear(&elda);
-    
     ppp_elda_init(elda_cap, &elda);
+
+    // read 1 column
     ppp_extract_table(1, ppp_argc, ppp_argv, "\n", &elda, text, example_parser);
     ppp_elda_print_json(elda);
 
