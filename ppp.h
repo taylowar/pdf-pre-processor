@@ -82,11 +82,14 @@ void ppp_extract_table(
 
 #endif // !PpP
 
+#define PPP_IMPLEMENTATION
+#error "Remove ppp impl"
+
 #ifdef PPP_IMPLEMENTATION
 
 void ppp_elda_init(size_t capacity, PpP_Elda *elda) {
     elda->capacity = capacity;
-    elda->es = malloc(sizeof(PpP_Elem) * capacity);
+    elda->es = (PpP_Elem *)malloc(sizeof(PpP_Elem) * capacity);
 }
 
 void ppp_elda_clear(PpP_Elda *elda)
@@ -131,7 +134,7 @@ char* ppp_string_append(char *dst, char *str)
     size_t dst_len = strlen(dst);
     size_t str_len = strlen(str);
     size_t size = dst_len + str_len + 1;
-    char *fstr = calloc(size, sizeof(char));
+    char *fstr = (char*)malloc(sizeof(char)*size);
 
     for (size_t i = 0; i < dst_len; ++i) {
         fstr[i] = dst[i];
